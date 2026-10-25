@@ -1,0 +1,15 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Id": "com.github.vitroidfpv.klipper-kde",
+        "Name": "Klipper Printers",
+        "Description": "Printer status and statistics with sample data",
+        "Icon": "printer",
+        "Category": "System Information",
+        "License": "GPL-3.0-or-later",
+        "Version": "0.1.0",
+        "Website": "https://github.com/VitroidFPV/klipper-kde",
+        "Authors": [{ "Name": "VitroidFPV" }]
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

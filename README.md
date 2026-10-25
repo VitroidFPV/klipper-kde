@@ -2,13 +2,29 @@
 
 A KDE Plasma desktop widget for Klipper printers.
 
-The Moonraker connection component is available. The widget interface and
-installation package are not available yet.
+The widget uses static sample data. It does not connect to a printer.
+
+## Widget preview
+
+Qt 6 and the Plasma SDK are required.
+
+```sh
+./tools/preview.sh
+```
+
+Use the selector to show Printing, Paused, Idle, or Offline.
+The SDK refresh button recreates the widget, but can retain old QML components.
+Close and reopen the preview to load file changes reliably.
+The command uses a temporary package link. It does not install the widget.
+The link is removed when the preview stops.
+
+Edit `package/contents/ui/PrinterCard.qml` to change the layout.
+Edit `package/contents/ui/SampleData.js` to change the sample data.
 
 ## Connection
 
 `package/contents/ui/MoonrakerClient.qml` uses Qt 6 and QtWebSockets.
-Use one component for each printer.
+It is not connected to the widget yet. Use one component for each printer.
 
 ```qml
 MoonrakerClient {
@@ -52,6 +68,7 @@ It uses a local test server.
 ```sh
 /usr/lib64/qt6/bin/qmllint package/contents/ui/MoonrakerClient.qml tools/probe.qml
 python3 tests/test_connection.py
+python3 tests/test_preview_reload.py
 ```
 
 See the [Moonraker API documentation](https://moonraker.readthedocs.io/en/latest/external_api/introduction/).
