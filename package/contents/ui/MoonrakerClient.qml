@@ -2,7 +2,7 @@ import QtQuick
 import QtWebSockets
 import "Moonraker.js" as Protocol
 
-// One instance per printer. Only status, metadata and history requests are sent.
+// One instance per printer. Requests only data needed to display printer status.
 Item {
     id: root
     visible: false
@@ -17,6 +17,7 @@ Item {
     readonly property var status: internal.status
     readonly property var metadata: internal.metadata
     readonly property var historyTotals: internal.historyTotals
+    readonly property var temperatureHistory: internal.temperatureHistory
     readonly property double lastStatusAt: internal.lastStatusAt
     readonly property double historyUpdatedAt: internal.historyUpdatedAt
 
@@ -28,9 +29,11 @@ Item {
         property var status: ({})
         property var metadata: ({})
         property var historyTotals: ({})
+        property var temperatureHistory: []
         property double lastStatusAt: 0
         property double historyUpdatedAt: 0
         property int nextId: 0
+        property int temperatureRequestId: 0
         property var pending: ({})
         property int retryDelay: 1000
     }
@@ -50,10 +53,39 @@ Item {
         });
     }
 
+    function refreshTemperatureHistory() {
+        var requestId = ++internal.temperatureRequestId;
+        var requestedAt = Date.now();
+        request("server.temperature_store", {}, function(result) {
+            if (requestId !== internal.temperatureRequestId || !internal.subscribed || internal.klippyState !== "ready")
+                return;
+            var cached = Protocol.temperatureHistory(result, requestedAt);
+            if (!cached.length) return;
+            var live = internal.temperatureHistory.filter(function(sample) { return sample.time > requestedAt; });
+            internal.temperatureHistory = cached.concat(live).slice(-1200);
+        });
+    }
+
     function updateStatus(patch) {
         var previousFile = status.print_stats ? status.print_stats.filename : "";
         internal.status = Protocol.merge(status, patch);
         internal.lastStatusAt = Date.now();
+        var extruder = internal.status.extruder || {};
+        var bed = internal.status.heater_bed || {};
+        if (typeof extruder.temperature === "number" || typeof bed.temperature === "number") {
+            var samples = internal.temperatureHistory.slice();
+            var sample = { time: internal.lastStatusAt,
+                extruder: extruder.temperature, extruderTarget: extruder.target,
+                bed: bed.temperature, bedTarget: bed.target };
+            if (samples.length && Math.floor(sample.time / 1000) === Math.floor(samples[samples.length - 1].time / 1000))
+                samples[samples.length - 1] = sample;
+            else
+                samples.push(sample);
+            var cutoff = internal.lastStatusAt - 20 * 60 * 1000;
+            while (samples.length && (samples[0].time < cutoff || samples.length > 1200))
+                samples.shift();
+            internal.temperatureHistory = samples;
+        }
         var filename = status.print_stats ? status.print_stats.filename : "";
         if (filename !== previousFile) {
             internal.metadata = {};
@@ -74,6 +106,7 @@ Item {
                 internal.status = {};
                 updateStatus(snapshot.status);
                 internal.subscribed = true;
+                refreshTemperatureHistory();
             });
         });
     }
@@ -133,6 +166,7 @@ Item {
             internal.status = {};
             internal.metadata = {};
             internal.historyTotals = {};
+            internal.temperatureHistory = [];
             internal.lastStatusAt = 0;
             internal.historyUpdatedAt = 0;
         }

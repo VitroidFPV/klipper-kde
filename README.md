@@ -3,6 +3,12 @@
 A KDE Plasma desktop widget for Klipper printers.
 
 The widget shows live status and statistics from Moonraker.
+Use the **Model** and **Graph** buttons in the widget header to switch the
+preview area between the model image and a 20-minute temperature graph for the
+extruder and heated bed. Print status and statistics remain visible.
+The graph loads Moonraker's cached readings when it connects, then adds live
+samples. Moonraker keeps about 20 minutes by default; the widget keeps its copy
+in memory.
 Open the widget settings and set a printer name and Moonraker URL
 (for example, `http://printer.local:7125`). Use one widget per printer.
 Enable **Tint model image with the theme highlight color** in the widget settings
@@ -13,7 +19,7 @@ but are not stored or configured by the widget.
 
 ## Installation
 
-KDE Plasma 6 and QtWebSockets are required. Download `Klipper-Printers.plasmoid`
+KDE Plasma 6, KQuickCharts, and QtWebSockets are required. Download `Klipper-Printers.plasmoid`
 from the [latest release](https://github.com/VitroidFPV/klipper-kde/releases/latest),
 then run:
 
@@ -98,7 +104,8 @@ Set `address` to the Moonraker URL. If necessary, include port `7125`.
 Set `apiKey` if the connection requires authentication.
 Set `connectionEnabled` to `false` to disconnect.
 
-The component supplies print status, file metadata, and history totals.
+The component supplies print status, file metadata, history totals, and cached
+temperature readings.
 It connects again automatically after a connection failure.
 Use `ready` to check that print status is current.
 
@@ -137,6 +144,7 @@ It uses a local test server.
 python3 tests/test_connection.py
 python3 tests/test_preview_reload.py
 QT_QPA_PLATFORM=offscreen /usr/lib64/qt6/bin/qmltestrunner -input tests/tst_printerdata.qml
+QT_QPA_PLATFORM=offscreen /usr/lib64/qt6/bin/qmltestrunner -input tests/tst_temperaturehistory.qml
 ```
 
 The image tint pixel test also requires a working OpenGL context:

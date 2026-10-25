@@ -26,6 +26,9 @@ Item {
         }
         onMetadataChanged: console.log("Metadata:", JSON.stringify(metadata))
         onHistoryTotalsChanged: console.log("History:", JSON.stringify(historyTotals))
+        onTemperatureHistoryChanged: if (temperatureHistory.length > 1)
+            console.log("Temperature history:", JSON.stringify({ length: temperatureHistory.length,
+                first: temperatureHistory[0], last: temperatureHistory[temperatureHistory.length - 1] }))
     }
 
     Timer {
