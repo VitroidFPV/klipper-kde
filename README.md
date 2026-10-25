@@ -9,6 +9,34 @@ The widget currently connects to Moonraker instances that allow access from your
 computer without authentication. API keys are supported by the standalone client,
 but are not stored or configured by the widget.
 
+## Installation
+
+KDE Plasma 6 and QtWebSockets are required. From the repository directory, run:
+
+```sh
+kpackagetool6 --type Plasma/Applet --install ./package
+```
+
+This installs the widget for your user; no `sudo` is needed.
+Right-click the desktop or panel, choose **Add Widgets**, and search for
+**Klipper Printers**. Add it, then open its settings to enter the printer name
+and Moonraker URL.
+
+After changing the code, update the installed copy:
+
+```sh
+kpackagetool6 --type Plasma/Applet --upgrade ./package
+```
+
+Remove and re-add the widget to reload it. If Plasma retains old QML components,
+log out and back in.
+
+To uninstall:
+
+```sh
+kpackagetool6 --type Plasma/Applet --remove com.github.vitroidfpv.klipper-kde
+```
+
 ## Widget preview
 
 Qt 6 and the Plasma SDK are required.
