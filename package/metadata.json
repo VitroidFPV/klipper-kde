@@ -7,7 +7,7 @@
         "Icon": "printer",
         "Category": "System Information",
         "License": "GPL-3.0-or-later",
-        "Version": "0.1.0",
+        "Version": "1.0.0",
         "Website": "https://github.com/VitroidFPV/klipper-kde",
         "Authors": [{ "Name": "VitroidFPV" }]
     },
