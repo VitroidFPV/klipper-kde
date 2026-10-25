@@ -13,6 +13,10 @@ ColumnLayout {
     property var temperatureHistory: []
     property var temperatureStatus: ({})
     property bool showTemperatures: false
+    QQC2.ButtonGroup {
+        id: viewButtonGroup
+        exclusive: true
+    }
     readonly property bool hasJob: printerState === "Printing" || printerState === "Paused"
     readonly property bool offline: printerState === "Offline"
     spacing: Kirigami.Units.largeSpacing
@@ -44,6 +48,7 @@ ColumnLayout {
             display: QQC2.AbstractButton.IconOnly
             icon.name: "draw-cuboid"
             checkable: true
+            QQC2.ButtonGroup.group: viewButtonGroup
             checked: !root.showTemperatures
             onClicked: root.showTemperatures = false
             PlasmaComponents.ToolTip.text: text
@@ -55,6 +60,7 @@ ColumnLayout {
             display: QQC2.AbstractButton.IconOnly
             icon.name: "view-media-chart"
             checkable: true
+            QQC2.ButtonGroup.group: viewButtonGroup
             checked: root.showTemperatures
             onClicked: root.showTemperatures = true
             Accessible.name: qsTr("Temperature graph")

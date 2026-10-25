@@ -70,22 +70,7 @@ Item {
         var previousFile = status.print_stats ? status.print_stats.filename : "";
         internal.status = Protocol.merge(status, patch);
         internal.lastStatusAt = Date.now();
-        var extruder = internal.status.extruder || {};
-        var bed = internal.status.heater_bed || {};
-        if (typeof extruder.temperature === "number" || typeof bed.temperature === "number") {
-            var samples = internal.temperatureHistory.slice();
-            var sample = { time: internal.lastStatusAt,
-                extruder: extruder.temperature, extruderTarget: extruder.target,
-                bed: bed.temperature, bedTarget: bed.target };
-            if (samples.length && Math.floor(sample.time / 1000) === Math.floor(samples[samples.length - 1].time / 1000))
-                samples[samples.length - 1] = sample;
-            else
-                samples.push(sample);
-            var cutoff = internal.lastStatusAt - 20 * 60 * 1000;
-            while (samples.length && (samples[0].time < cutoff || samples.length > 1200))
-                samples.shift();
-            internal.temperatureHistory = samples;
-        }
+        sampleTemperatures(internal.lastStatusAt);
         var filename = status.print_stats ? status.print_stats.filename : "";
         if (filename !== previousFile) {
             internal.metadata = {};
@@ -96,6 +81,25 @@ Item {
                         internal.metadata = result;
                 });
             }
+        }
+    }
+
+    function sampleTemperatures(timestamp) {
+        var extruder = internal.status.extruder || {};
+        var bed = internal.status.heater_bed || {};
+        if (typeof extruder.temperature === "number" || typeof bed.temperature === "number") {
+            var samples = internal.temperatureHistory.slice();
+            var sample = { time: timestamp,
+                extruder: extruder.temperature, extruderTarget: extruder.target,
+                bed: bed.temperature, bedTarget: bed.target };
+            if (samples.length && Math.floor(sample.time / 1000) === Math.floor(samples[samples.length - 1].time / 1000))
+                samples[samples.length - 1] = sample;
+            else
+                samples.push(sample);
+            var cutoff = timestamp - 20 * 60 * 1000;
+            while (samples.length && (samples[0].time < cutoff || samples.length > 1200))
+                samples.shift();
+            internal.temperatureHistory = samples;
         }
     }
 
@@ -217,6 +221,14 @@ Item {
             internal.retryDelay = Math.min(internal.retryDelay * 2, 30000);
             socket.active = true;
         }
+    }
+
+    Timer {
+        objectName: "temperatureSampler"
+        interval: 1000
+        repeat: true
+        running: root.ready
+        onTriggered: root.sampleTemperatures(Date.now())
     }
 
     // A round trip detects half-open sockets even while a printer is idle.

@@ -67,6 +67,8 @@ TestCase {
         compare(graphButton.icon.name, "view-media-chart");
         compare(modelButton.display, QQC2.AbstractButton.IconOnly);
         compare(graphButton.display, QQC2.AbstractButton.IconOnly);
+        compare(modelButton.checked, true);
+        compare(graphButton.checked, false);
         card.temperatureStatus = { extruder: { temperature: 210, target: 215 },
             heater_bed: { temperature: 60, target: 60 } };
         card.temperatureHistory = [
@@ -75,6 +77,8 @@ TestCase {
         ];
         mouseClick(graphButton);
         compare(card.showTemperatures, true);
+        compare(graphButton.checked, true);
+        compare(modelButton.checked, false);
         compare(graph.visible, true);
         compare(graph.history.length, 2);
         var chart = findChild(graph, "temperatureLineChart");
@@ -84,9 +88,19 @@ TestCase {
         compare(chart.valueSources[0].array[1], 208);
         verify(state.visible && progress.visible && filename.visible && stats.visible);
         waitForRendering(graph);
+        mouseClick(graphButton);
+        compare(card.showTemperatures, true);
+        compare(graphButton.checked, true);
+        compare(modelButton.checked, false);
         mouseClick(modelButton);
         compare(card.showTemperatures, false);
+        compare(modelButton.checked, true);
+        compare(graphButton.checked, false);
         compare(graph.visible, false);
+        mouseClick(modelButton);
+        compare(card.showTemperatures, false);
+        compare(modelButton.checked, true);
+        compare(graphButton.checked, false);
     }
 
     function test_themeTint() {

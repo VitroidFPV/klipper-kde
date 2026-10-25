@@ -18,4 +18,15 @@ TestCase {
         verify(client.temperatureHistory.length >= 2,
             "Frequent updates must add points across multiple seconds");
     }
+
+    function test_quietSubscriptionKeepsSampling() {
+        client.updateStatus({ extruder: { temperature: 200, target: 210 } });
+        var sampler = findChild(client, "temperatureSampler");
+        verify(sampler);
+        // Simulate the ready state so the sampler can be exercised without a socket.
+        sampler.running = true;
+        tryVerify(function() { return client.temperatureHistory.length >= 2; }, 1500);
+        verify(client.temperatureHistory[1].time > client.temperatureHistory[0].time);
+        sampler.running = false;
+    }
 }
