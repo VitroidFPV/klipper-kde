@@ -12,6 +12,7 @@ ColumnLayout {
     property bool tintModelImage: false
     property var temperatureHistory: []
     property var temperatureStatus: ({})
+    property var recentPrints: []
     property bool showTemperatures: false
     QQC2.ButtonGroup {
         id: viewButtonGroup
@@ -44,7 +45,7 @@ ColumnLayout {
         }
         PlasmaComponents.ToolButton {
             objectName: "modelViewButton"
-            text: qsTr("Model")
+            text: root.hasJob ? qsTr("Model") : qsTr("Recent prints")
             display: QQC2.AbstractButton.IconOnly
             icon.name: "draw-cuboid"
             checkable: true
@@ -107,6 +108,15 @@ ColumnLayout {
             colorization: 1.0
             colorizationColor: Kirigami.Theme.highlightColor
         }
+    }
+
+    RecentPrints {
+        objectName: "recentPrintsView"
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        visible: !root.hasJob && !root.showTemperatures
+        jobs: root.recentPrints
+        tintModelImage: root.tintModelImage
     }
 
     PlasmaComponents.Label {
@@ -203,8 +213,4 @@ ColumnLayout {
         }
     }
 
-    Item {
-        Layout.fillHeight: true
-        visible: !root.hasJob && !root.showTemperatures
-    }
 }

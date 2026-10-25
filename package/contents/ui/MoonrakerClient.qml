@@ -17,6 +17,7 @@ Item {
     readonly property var status: internal.status
     readonly property var metadata: internal.metadata
     readonly property var historyTotals: internal.historyTotals
+    readonly property var recentJobs: internal.recentJobs
     readonly property var temperatureHistory: internal.temperatureHistory
     readonly property double lastStatusAt: internal.lastStatusAt
     readonly property double historyUpdatedAt: internal.historyUpdatedAt
@@ -29,6 +30,7 @@ Item {
         property var status: ({})
         property var metadata: ({})
         property var historyTotals: ({})
+        property var recentJobs: []
         property var temperatureHistory: []
         property double lastStatusAt: 0
         property double historyUpdatedAt: 0
@@ -50,6 +52,9 @@ Item {
         request("server.history.totals", {}, function(result) {
             internal.historyTotals = result.job_totals;
             internal.historyUpdatedAt = Date.now();
+        });
+        request("server.history.list", { limit: 11, order: "desc" }, function(result) {
+            internal.recentJobs = result.jobs || [];
         });
     }
 
@@ -170,6 +175,7 @@ Item {
             internal.status = {};
             internal.metadata = {};
             internal.historyTotals = {};
+            internal.recentJobs = [];
             internal.temperatureHistory = [];
             internal.lastStatusAt = 0;
             internal.historyUpdatedAt = 0;
