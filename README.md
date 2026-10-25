@@ -5,6 +5,8 @@ A KDE Plasma desktop widget for Klipper printers.
 The widget shows live status and statistics from Moonraker.
 Open the widget settings and set a printer name and Moonraker URL
 (for example, `http://printer.local:7125`). Use one widget per printer.
+Enable **Tint model image with the theme highlight color** in the widget settings
+to fully desaturate the print preview and tint it with KDE’s current highlight color.
 The widget currently connects to Moonraker instances that allow access from your
 computer without authentication. API keys are supported by the standalone client,
 but are not stored or configured by the widget.

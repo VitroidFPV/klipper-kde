@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
@@ -7,6 +8,7 @@ ColumnLayout {
     id: root
     required property var printer
     property string printerState: "Offline"
+    property bool tintModelImage: false
     readonly property bool hasJob: printerState === "Printing" || printerState === "Paused"
     readonly property bool offline: printerState === "Offline"
     spacing: Kirigami.Units.largeSpacing
@@ -55,6 +57,12 @@ ColumnLayout {
         fillMode: Image.PreserveAspectFit
         sourceSize.width: 640
         Accessible.name: qsTr("Print preview")
+        layer.enabled: root.tintModelImage
+        layer.effect: MultiEffect {
+            // Full colorization replaces the source hue; saturation would also desaturate the tint.
+            colorization: 1.0
+            colorizationColor: Kirigami.Theme.highlightColor
+        }
     }
 
     PlasmaComponents.Label {

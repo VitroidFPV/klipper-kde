@@ -4,5 +4,6 @@
   <group name="General">
     <entry name="printerName" type="String"><default>Klipper printer</default></entry>
     <entry name="address" type="String"><default></default></entry>
+    <entry name="tintModelImage" type="Bool"><default>false</default></entry>
   </group>
 </kcfg>

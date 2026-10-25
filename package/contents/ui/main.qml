@@ -37,6 +37,7 @@ PlasmoidItem {
                     client.status, client.metadata, client.historyTotals, client.lastStatusAt,
                     client.historyUpdatedAt, client.ready)
                 printerState: PrinterData.state(client.ready, client.connected, client.klippyState, client.status)
+                tintModelImage: Plasmoid.configuration.tintModelImage
             }
 
             PlasmaComponents.Label {
