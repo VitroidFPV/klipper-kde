@@ -1,5 +1,6 @@
 import QtQuick
 import QtTest
+import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 import "../package/contents/ui" as Widget
 
@@ -51,6 +52,55 @@ TestCase {
             "Expected theme tint " + tint + ", got " + pixel);
         verify(Math.abs(pixel.b / pixel.r - tint.b / tint.r) < 0.02,
             "Expected theme tint " + tint + ", got " + pixel);
+    }
+
+    function test_switchViews() {
+        var graphButton = findChild(card, "temperatureViewButton");
+        var modelButton = findChild(card, "modelViewButton");
+        var graph = findChild(card, "temperatureGraph");
+        var state = findChild(card, "printerStateLabel");
+        var progress = findChild(card, "printProgress");
+        var filename = findChild(card, "printFilename");
+        var stats = findChild(card, "printStats");
+        verify(graphButton && modelButton && graph && state && progress && filename && stats);
+        compare(modelButton.icon.name, "draw-cuboid");
+        compare(graphButton.icon.name, "view-media-chart");
+        compare(modelButton.display, QQC2.AbstractButton.IconOnly);
+        compare(graphButton.display, QQC2.AbstractButton.IconOnly);
+        compare(modelButton.checked, true);
+        compare(graphButton.checked, false);
+        card.temperatureStatus = { extruder: { temperature: 210, target: 215 },
+            heater_bed: { temperature: 60, target: 60 } };
+        card.temperatureHistory = [
+            { time: 1000, extruder: 208, extruderTarget: 215, bed: 59, bedTarget: 60 },
+            { time: 2000, extruder: 210, extruderTarget: 215, bed: 60, bedTarget: 60 }
+        ];
+        mouseClick(graphButton);
+        compare(card.showTemperatures, true);
+        compare(graphButton.checked, true);
+        compare(modelButton.checked, false);
+        compare(graph.visible, true);
+        compare(graph.history.length, 2);
+        var chart = findChild(graph, "temperatureLineChart");
+        verify(chart);
+        compare(chart.valueSources.length, 4);
+        compare(chart.valueSources[0].array[0], 210);
+        compare(chart.valueSources[0].array[1], 208);
+        verify(state.visible && progress.visible && filename.visible && stats.visible);
+        waitForRendering(graph);
+        mouseClick(graphButton);
+        compare(card.showTemperatures, true);
+        compare(graphButton.checked, true);
+        compare(modelButton.checked, false);
+        mouseClick(modelButton);
+        compare(card.showTemperatures, false);
+        compare(modelButton.checked, true);
+        compare(graphButton.checked, false);
+        compare(graph.visible, false);
+        mouseClick(modelButton);
+        compare(card.showTemperatures, false);
+        compare(modelButton.checked, true);
+        compare(graphButton.checked, false);
     }
 
     function test_themeTint() {

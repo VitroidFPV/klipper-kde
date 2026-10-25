@@ -21,7 +21,9 @@ function subscription(available) {
     var wanted = {
         print_stats: ["state", "message", "filename", "print_duration", "total_duration", "filament_used", "info"],
         display_status: ["progress", "message"],
-        virtual_sdcard: ["progress"]
+        virtual_sdcard: ["progress"],
+        extruder: ["temperature", "target"],
+        heater_bed: ["temperature", "target"]
     };
     var objects = {};
     Object.keys(wanted).forEach(function(name) {
@@ -29,4 +31,26 @@ function subscription(available) {
             objects[name] = wanted[name];
     });
     return objects;
+}
+
+// Moonraker stores one reading per second, with the newest reading last.
+function temperatureHistory(store, endTime) {
+    var extruder = store.extruder || {};
+    var bed = store.heater_bed || {};
+    var fields = [extruder.temperatures, extruder.targets, bed.temperatures, bed.targets];
+    var count = Math.min(1200, Math.max.apply(null, fields.map(function(field) {
+        return Array.isArray(field) ? field.length : 0;
+    })));
+    var samples = [];
+    function reading(field, age) {
+        return Array.isArray(field) ? field[field.length - 1 - age] : undefined;
+    }
+    for (var age = count - 1; age >= 0; --age) {
+        samples.push({ time: endTime - age * 1000,
+            extruder: reading(extruder.temperatures, age),
+            extruderTarget: reading(extruder.targets, age),
+            bed: reading(bed.temperatures, age),
+            bedTarget: reading(bed.targets, age) });
+    }
+    return samples;
 }

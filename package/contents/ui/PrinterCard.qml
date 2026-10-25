@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
+import QtQuick.Controls as QQC2
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 
@@ -9,6 +10,13 @@ ColumnLayout {
     required property var printer
     property string printerState: "Offline"
     property bool tintModelImage: false
+    property var temperatureHistory: []
+    property var temperatureStatus: ({})
+    property bool showTemperatures: false
+    QQC2.ButtonGroup {
+        id: viewButtonGroup
+        exclusive: true
+    }
     readonly property bool hasJob: printerState === "Printing" || printerState === "Paused"
     readonly property bool offline: printerState === "Offline"
     spacing: Kirigami.Units.largeSpacing
@@ -27,11 +35,37 @@ ColumnLayout {
                 elide: Text.ElideRight
             }
             PlasmaComponents.Label {
+                objectName: "printerStateLabel"
                 text: root.printerState
                 color: root.printerState === "Error" || root.printerState === "Shutdown" ? Kirigami.Theme.negativeTextColor
                     : root.offline || root.printerState === "Connecting" ? Kirigami.Theme.disabledTextColor
                     : root.printerState === "Paused" ? Kirigami.Theme.neutralTextColor : Kirigami.Theme.positiveTextColor
             }
+        }
+        PlasmaComponents.ToolButton {
+            objectName: "modelViewButton"
+            text: qsTr("Model")
+            display: QQC2.AbstractButton.IconOnly
+            icon.name: "draw-cuboid"
+            checkable: true
+            QQC2.ButtonGroup.group: viewButtonGroup
+            checked: !root.showTemperatures
+            onClicked: root.showTemperatures = false
+            PlasmaComponents.ToolTip.text: text
+            PlasmaComponents.ToolTip.visible: hovered
+        }
+        PlasmaComponents.ToolButton {
+            objectName: "temperatureViewButton"
+            text: qsTr("Graph")
+            display: QQC2.AbstractButton.IconOnly
+            icon.name: "view-media-chart"
+            checkable: true
+            QQC2.ButtonGroup.group: viewButtonGroup
+            checked: root.showTemperatures
+            onClicked: root.showTemperatures = true
+            Accessible.name: qsTr("Temperature graph")
+            PlasmaComponents.ToolTip.text: qsTr("Temperature graph")
+            PlasmaComponents.ToolTip.visible: hovered
         }
         Kirigami.Heading {
             visible: root.hasJob
@@ -41,10 +75,20 @@ ColumnLayout {
     }
 
     PlasmaComponents.ProgressBar {
+        objectName: "printProgress"
         Layout.fillWidth: true
         visible: root.hasJob
         value: root.printer.progress
         Accessible.name: qsTr("Print progress")
+    }
+
+    TemperatureGraph {
+        objectName: "temperatureGraph"
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        visible: root.showTemperatures
+        history: root.temperatureHistory
+        status: root.temperatureStatus
     }
 
     Image {
@@ -52,7 +96,7 @@ ColumnLayout {
         Layout.fillHeight: true
         Layout.minimumHeight: Kirigami.Units.gridUnit * 5
         Layout.preferredHeight: Kirigami.Units.gridUnit * 9
-        visible: root.hasJob && source.toString().length > 0 && status !== Image.Error
+        visible: root.hasJob && !root.showTemperatures && source.toString().length > 0 && status !== Image.Error
         source: root.printer.thumbnail
         fillMode: Image.PreserveAspectFit
         sourceSize.width: 640
@@ -66,6 +110,7 @@ ColumnLayout {
     }
 
     PlasmaComponents.Label {
+        objectName: "printFilename"
         Layout.fillWidth: true
         visible: root.hasJob
         text: root.printer.filename
@@ -83,6 +128,7 @@ ColumnLayout {
     }
 
     GridLayout {
+        objectName: "printStats"
         Layout.fillWidth: true
         visible: root.hasJob
         columns: 3
@@ -159,6 +205,6 @@ ColumnLayout {
 
     Item {
         Layout.fillHeight: true
-        visible: !root.hasJob
+        visible: !root.hasJob && !root.showTemperatures
     }
 }

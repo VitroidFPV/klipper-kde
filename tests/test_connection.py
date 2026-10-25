@@ -32,16 +32,24 @@ async def main():
                 result = {"klippy_state": "ready"}
             elif method == "server.history.totals":
                 result = {"job_totals": {"total_jobs": 673}}
+            elif method == "server.temperature_store":
+                result = {
+                    "extruder": {"temperatures": [200.0, 205.0, 210.0], "targets": [210.0, 215.0, 215.0]},
+                    "heater_bed": {"temperatures": [59.0, 60.0], "targets": [60.0, 60.0]},
+                }
             elif method == "printer.objects.list":
                 # Optional display_status is intentionally absent.
-                result = {"objects": ["print_stats", "virtual_sdcard"]}
+                result = {"objects": ["print_stats", "virtual_sdcard", "extruder", "heater_bed"]}
             elif method == "printer.objects.subscribe":
                 subscriptions += 1
-                assert set(message["params"]["objects"]) == {"print_stats", "virtual_sdcard"}
+                assert set(message["params"]["objects"]) == {
+                    "print_stats", "virtual_sdcard", "extruder", "heater_bed"}
                 result = {"status": {
                     "print_stats": {"filename": "test.gcode", "state": "printing",
                                     "info": {"current_layer": 1, "total_layer": 123}},
                     "virtual_sdcard": {"progress": 0.5},
+                    "extruder": {"temperature": 210.0, "target": 215.0},
+                    "heater_bed": {"temperature": 60.0, "target": 60.0},
                 }}
             elif method == "server.files.metadata":
                 result = {"filename": "test.gcode", "estimated_time": 5000}
@@ -79,6 +87,8 @@ async def main():
         snapshots = [json.loads(line.split("Status: ", 1)[1]) for line in text.splitlines() if "Status: {" in line]
         assert any(s["print_stats"]["info"] == {"current_layer": 25, "total_layer": 123}
                    and s["print_stats"]["filename"] == "test.gcode" for s in snapshots), text
+        assert any(s.get("extruder", {}).get("temperature") == 210.0
+                   and s.get("heater_bed", {}).get("target") == 60.0 for s in snapshots), text
         cards = [json.loads(line.split("Card: ", 1)[1]) for line in text.splitlines() if "Card: {" in line]
         assert any(card["filename"] == "test.gcode" and card["layer"] == "25 of 123"
                    and card["progress"] == 0.5 and card["slicer"] == "1h 23m" for card in cards), text
@@ -87,8 +97,15 @@ async def main():
         assert 'History: {"total_jobs":673}' in text, text
         assert '"estimated_time":5000' in text, text
         assert methods.count("server.history.totals") >= 3, methods
+        assert methods.count("server.temperature_store") >= 1, methods
+        temperatures = [json.loads(line.split("Temperature history: ", 1)[1])
+                        for line in text.splitlines() if "Temperature history: {" in line]
+        assert any(entry["length"] >= 3 and entry["first"]["extruder"] == 200.0
+                   and "bed" not in entry["first"]
+                   and entry["last"]["extruder"] == 210.0
+                   and entry["last"]["bed"] == 60.0 for entry in temperatures), text
         assert "Ready: false" in text, text
-        print("PASS: live QML subscription, nested deltas, optional objects, metadata, history, reconnect and Klipper recovery")
+        print("PASS: live QML subscription, temperature cache, nested deltas, metadata, history, reconnect and Klipper recovery")
 
 
 if __name__ == "__main__":

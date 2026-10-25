@@ -38,6 +38,8 @@ PlasmoidItem {
                     client.historyUpdatedAt, client.ready)
                 printerState: PrinterData.state(client.ready, client.connected, client.klippyState, client.status)
                 tintModelImage: Plasmoid.configuration.tintModelImage
+                temperatureHistory: client.temperatureHistory
+                temperatureStatus: client.status
             }
 
             PlasmaComponents.Label {
