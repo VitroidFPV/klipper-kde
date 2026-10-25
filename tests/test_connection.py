@@ -32,6 +32,11 @@ async def main():
                 result = {"klippy_state": "ready"}
             elif method == "server.history.totals":
                 result = {"job_totals": {"total_jobs": 673}}
+            elif method == "server.history.list":
+                assert message["params"] == {"limit": 11, "order": "desc"}
+                result = {"jobs": [{"job_id": "1", "filename": "recent.gcode",
+                                    "status": "completed", "print_duration": 120,
+                                    "end_time": 1700000000}]}
             elif method == "server.temperature_store":
                 result = {
                     "extruder": {"temperatures": [200.0, 205.0, 210.0], "targets": [210.0, 215.0, 215.0]},
@@ -97,6 +102,10 @@ async def main():
         assert 'History: {"total_jobs":673}' in text, text
         assert '"estimated_time":5000' in text, text
         assert methods.count("server.history.totals") >= 3, methods
+        assert methods.count("server.history.list") >= 3, methods
+        recent = [json.loads(line.split("Recent jobs: ", 1)[1])
+                  for line in text.splitlines() if "Recent jobs: [" in line]
+        assert any(jobs and jobs[0]["filename"] == "recent.gcode" for jobs in recent), text
         assert methods.count("server.temperature_store") >= 1, methods
         temperatures = [json.loads(line.split("Temperature history: ", 1)[1])
                         for line in text.splitlines() if "Temperature history: {" in line]

@@ -30,6 +30,35 @@ TestCase {
         compare(Data.state(false, true, "shutdown", status), "Shutdown");
     }
 
+    function test_recentPrints() {
+        var jobs = [{ status: "in_progress", filename: "active.gcode" },
+            { status: "completed", filename: "bins/test.gcode", print_duration: 120,
+              end_time: 1700000000, metadata: { thumbnails: [{ width: 100, relative_path: ".thumbs/test.png" }] } },
+            { status: "error", filename: "deleted.gcode", exists: false,
+              metadata: { thumbnails: [{ width: 100, relative_path: "deleted.png" }] } },
+            { status: "cancelled", filename: "cancelled.gcode" },
+            { status: "completed", filename: "older.gcode" }];
+        var prints = Data.recentPrints("http://printer.local", jobs);
+        compare(prints.length, 4);
+        compare(prints[0].filename, "bins/test.gcode");
+        compare(prints[0].duration, "2m 0s");
+        compare(prints[0].status, "Complete");
+        compare(prints[0].thumbnail, "http://printer.local/server/files/gcodes/bins/.thumbs/test.png");
+        verify(prints[0].date !== "—");
+        compare(prints[1].failed, true);
+        compare(prints[1].thumbnail, "");
+        compare(prints[1].duration, "—");
+        compare(prints[1].date, "—");
+        compare(prints[2].status, "Cancelled");
+        compare(Data.recentPrints("", []).length, 0);
+        for (var i = 0; i < 10; ++i)
+            jobs.push({ status: "completed", filename: "older-" + i + ".gcode" });
+        prints = Data.recentPrints("", jobs);
+        compare(prints.length, 10);
+        compare(prints[0].filename, "bins/test.gcode");
+        compare(prints[9].filename, "older-5.gcode");
+    }
+
     function test_missingData() {
         var printer = Data.printer("", "", {}, {}, {}, 0, 0, false);
         compare(printer.remaining, "—");

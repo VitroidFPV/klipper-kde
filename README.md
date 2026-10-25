@@ -5,14 +5,19 @@ A KDE Plasma desktop widget for Klipper printers.
 The widget shows live status and statistics from Moonraker.
 Use the **Model** and **Graph** buttons in the widget header to switch the
 preview area between the model image and a 20-minute temperature graph for the
-extruder and heated bed. Print status and statistics remain visible.
+extruder and heated bed. When no print is active, the model area shows the ten most recent finished jobs,
+including thumbnails, status, duration, and finish date, with lifetime statistics below.
+Recent prints refresh automatically when Moonraker history changes and remain
+visible during a connection failure. The list scrolls when space is limited.
+Print status and statistics remain visible.
 The graph loads Moonraker's cached readings when it connects, then adds live
 samples. Moonraker keeps about 20 minutes by default; the widget keeps its copy
 in memory.
 Open the widget settings and set a printer name and Moonraker URL
 (for example, `http://printer.local:7125`). Use one widget per printer.
 Enable **Tint model image with the theme highlight color** in the widget settings
-to fully desaturate the print preview and tint it with KDE’s current highlight color.
+to fully desaturate the print preview and recent-print thumbnails and tint them
+with KDE’s current highlight color.
 The widget currently connects to Moonraker instances that allow access from your
 computer without authentication. API keys are supported by the standalone client,
 but are not stored or configured by the widget.

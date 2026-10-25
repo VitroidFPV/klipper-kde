@@ -40,6 +40,7 @@ PlasmoidItem {
                 tintModelImage: Plasmoid.configuration.tintModelImage
                 temperatureHistory: client.temperatureHistory
                 temperatureStatus: client.status
+                recentPrints: PrinterData.recentPrints(client.address, client.recentJobs)
             }
 
             PlasmaComponents.Label {

@@ -25,6 +25,7 @@ Item {
             console.log("Status:", JSON.stringify(status));
         }
         onMetadataChanged: console.log("Metadata:", JSON.stringify(metadata))
+        onRecentJobsChanged: console.log("Recent jobs:", JSON.stringify(recentJobs))
         onHistoryTotalsChanged: console.log("History:", JSON.stringify(historyTotals))
         onTemperatureHistoryChanged: if (temperatureHistory.length > 1)
             console.log("Temperature history:", JSON.stringify({ length: temperatureHistory.length,

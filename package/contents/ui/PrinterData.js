@@ -35,6 +35,22 @@ function thumbnail(address, filename, thumbnails) {
     return base + "/server/files/gcodes/" + path;
 }
 
+function recentPrints(address, jobs) {
+    var labels = { completed: qsTr("Complete"), cancelled: qsTr("Cancelled"),
+        error: qsTr("Error"), klippy_shutdown: qsTr("Shutdown"),
+        klippy_disconnect: qsTr("Disconnected"), interrupted: qsTr("Interrupted") };
+    return jobs.filter(function(job) { return job.status !== "in_progress"; }).slice(0, 10).map(function(job) {
+        return {
+            filename: job.filename || "—",
+            thumbnail: job.exists === false ? "" : thumbnail(address, job.filename, (job.metadata || {}).thumbnails),
+            status: labels[job.status] || qsTr("Unknown"),
+            failed: ["error", "klippy_shutdown", "klippy_disconnect", "interrupted"].indexOf(job.status) !== -1,
+            duration: duration(job.print_duration),
+            date: known(job.end_time) ? Qt.formatDateTime(new Date(job.end_time * 1000), "d MMM, hh:mm") : "—"
+        };
+    });
+}
+
 // Keep the view independent of Moonraker's nested objects and units.
 function printer(name, address, status, metadata, history, lastStatusAt, historyUpdatedAt, ready) {
     var stats = status.print_stats || {};
