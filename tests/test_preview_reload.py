@@ -64,6 +64,11 @@ def main():
         assert "RELOAD_TEST: missing applet" not in text, text
         assert "does not exist" not in text, text
         assert "error when loading applet" not in text, text
+        widget_lines = [line for line in text.splitlines()
+                        if str(ROOT) in line or "com.github.vitroidfpv.klipper-kde/" in line]
+        assert not any(error in line for line in widget_lines
+                       for error in ("TypeError:", "ReferenceError:",
+                                     "Cannot assign to non-existent property")), text
         assert not list(temp.glob("klipper-kde-preview.*")), "Temporary package link was not removed"
         print("PASS: SDK refresh loads the widget by ID and removes the temporary package link")
 

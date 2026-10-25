@@ -1,5 +1,6 @@
 import QtQuick
 import "../package/contents/ui"
+import "../package/contents/ui/PrinterData.js" as PrinterData
 
 Item {
     id: probe
@@ -7,6 +8,10 @@ Item {
     property int updates: 0
     property var args: Qt.application.arguments
     property int separator: args.indexOf("--")
+
+    readonly property var printer: PrinterData.printer("Test printer", client.address, client.status,
+        client.metadata, client.historyTotals, client.lastStatusAt, client.historyUpdatedAt, client.ready)
+    onPrinterChanged: console.log("Card:", JSON.stringify(printer))
 
     MoonrakerClient {
         id: client

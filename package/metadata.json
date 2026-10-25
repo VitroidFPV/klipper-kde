@@ -3,7 +3,7 @@
     "KPlugin": {
         "Id": "com.github.vitroidfpv.klipper-kde",
         "Name": "Klipper Printers",
-        "Description": "Printer status and statistics with sample data",
+        "Description": "Live Klipper printer status and statistics",
         "Icon": "printer",
         "Category": "System Information",
         "License": "GPL-3.0-or-later",

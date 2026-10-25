@@ -6,7 +6,7 @@ import org.kde.plasma.components as PlasmaComponents
 ColumnLayout {
     id: root
     required property var printer
-    property string printerState: "Printing"
+    property string printerState: "Offline"
     readonly property bool hasJob: printerState === "Printing" || printerState === "Paused"
     readonly property bool offline: printerState === "Offline"
     spacing: Kirigami.Units.largeSpacing
@@ -26,7 +26,9 @@ ColumnLayout {
             }
             PlasmaComponents.Label {
                 text: root.printerState
-                color: root.offline ? Kirigami.Theme.disabledTextColor : root.printerState === "Paused" ? Kirigami.Theme.neutralTextColor : Kirigami.Theme.positiveTextColor
+                color: root.printerState === "Error" || root.printerState === "Shutdown" ? Kirigami.Theme.negativeTextColor
+                    : root.offline || root.printerState === "Connecting" ? Kirigami.Theme.disabledTextColor
+                    : root.printerState === "Paused" ? Kirigami.Theme.neutralTextColor : Kirigami.Theme.positiveTextColor
             }
         }
         Kirigami.Heading {
@@ -48,11 +50,11 @@ ColumnLayout {
         Layout.fillHeight: true
         Layout.minimumHeight: Kirigami.Units.gridUnit * 5
         Layout.preferredHeight: Kirigami.Units.gridUnit * 9
-        visible: root.hasJob
+        visible: root.hasJob && source.toString().length > 0 && status !== Image.Error
         source: root.printer.thumbnail
         fillMode: Image.PreserveAspectFit
         sourceSize.width: 640
-        Accessible.name: qsTr("Sample print: two storage bins")
+        Accessible.name: qsTr("Print preview")
     }
 
     PlasmaComponents.Label {
@@ -140,7 +142,7 @@ ColumnLayout {
         PlasmaComponents.Label {
             Layout.fillWidth: true
             visible: root.offline
-            text: qsTr("Last updated: 25 Oct, 16:08")
+            text: qsTr("Last updated: %1").arg(root.printer.lastUpdated)
             color: Kirigami.Theme.textColor
             opacity: 0.65
             font: Kirigami.Theme.smallFont

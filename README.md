@@ -2,7 +2,12 @@
 
 A KDE Plasma desktop widget for Klipper printers.
 
-The widget uses static sample data. It does not connect to a printer.
+The widget shows live status and statistics from Moonraker.
+Open the widget settings and set a printer name and Moonraker URL
+(for example, `http://printer.local:7125`). Use one widget per printer.
+The widget currently connects to Moonraker instances that allow access from your
+computer without authentication. API keys are supported by the standalone client,
+but are not stored or configured by the widget.
 
 ## Widget preview
 
@@ -12,19 +17,19 @@ Qt 6 and the Plasma SDK are required.
 ./tools/preview.sh
 ```
 
-Use the selector to show Printing, Paused, Idle, or Offline.
+Configure the printer through the preview’s widget settings.
 The SDK refresh button recreates the widget, but can retain old QML components.
 Close and reopen the preview to load file changes reliably.
 The command uses a temporary package link. It does not install the widget.
 The link is removed when the preview stops.
 
 Edit `package/contents/ui/PrinterCard.qml` to change the layout.
-Edit `package/contents/ui/SampleData.js` to change the sample data.
+Edit `package/contents/ui/PrinterData.js` to change how printer data is displayed.
 
 ## Connection
 
 `package/contents/ui/MoonrakerClient.qml` uses Qt 6 and QtWebSockets.
-It is not connected to the widget yet. Use one component for each printer.
+It supplies the widget’s live data. Use one component for each printer.
 
 ```qml
 MoonrakerClient {
@@ -44,6 +49,12 @@ Use `ready` to check that print status is current.
 The component does not send printer control commands.
 It keeps data in memory during a connection failure.
 It does not save data between sessions or store credentials.
+
+Progress, layers, slicer filament usage, thumbnails, and history come from Moonraker.
+Expected total time uses elapsed print time divided by progress, falling back to the
+slicer estimate until progress is available. Finish time is hidden while paused.
+Unavailable values show `—`. After a disconnection, history remains visible with
+the last update time until the client reconnects.
 
 ## Printer test
 
@@ -69,6 +80,7 @@ It uses a local test server.
 /usr/lib64/qt6/bin/qmllint package/contents/ui/MoonrakerClient.qml tools/probe.qml
 python3 tests/test_connection.py
 python3 tests/test_preview_reload.py
+QT_QPA_PLATFORM=offscreen /usr/lib64/qt6/bin/qmltestrunner -input tests/tst_printerdata.qml
 ```
 
 See the [Moonraker API documentation](https://moonraker.readthedocs.io/en/latest/external_api/introduction/).

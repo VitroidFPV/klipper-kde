@@ -79,6 +79,9 @@ async def main():
         snapshots = [json.loads(line.split("Status: ", 1)[1]) for line in text.splitlines() if "Status: {" in line]
         assert any(s["print_stats"]["info"] == {"current_layer": 25, "total_layer": 123}
                    and s["print_stats"]["filename"] == "test.gcode" for s in snapshots), text
+        cards = [json.loads(line.split("Card: ", 1)[1]) for line in text.splitlines() if "Card: {" in line]
+        assert any(card["filename"] == "test.gcode" and card["layer"] == "25 of 123"
+                   and card["progress"] == 0.5 and card["slicer"] == "1h 23m" for card in cards), text
         assert connections >= 2, (connections, text)
         assert subscriptions >= 3, (subscriptions, methods, text)
         assert 'History: {"total_jobs":673}' in text, text

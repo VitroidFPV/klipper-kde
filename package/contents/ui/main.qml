@@ -1,13 +1,21 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.plasmoid
 import org.kde.plasma.components as PlasmaComponents
-import "SampleData.js" as SampleData
+import "PrinterData.js" as PrinterData
 
 PlasmoidItem {
     id: root
     preferredRepresentation: fullRepresentation
+    Plasmoid.configurationRequired: !Plasmoid.configuration.address.trim()
+
+    MoonrakerClient {
+        id: client
+        address: Plasmoid.configuration.address
+    }
 
     fullRepresentation: ColumnLayout {
         Layout.minimumWidth: Kirigami.Units.gridUnit * 17
@@ -19,28 +27,21 @@ PlasmoidItem {
         PrinterCard {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            printer: SampleData.printer
-            printerState: sampleState.currentText
+            printer: PrinterData.printer(Plasmoid.configuration.printerName, client.address,
+                client.status, client.metadata, client.historyTotals, client.lastStatusAt,
+                client.historyUpdatedAt, client.ready)
+            printerState: PrinterData.state(client.ready, client.connected, client.klippyState, client.status)
         }
 
-        Kirigami.Separator {
+        PlasmaComponents.Label {
             Layout.fillWidth: true
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            PlasmaComponents.Label {
-                Layout.fillWidth: true
-                text: qsTr("Sample data")
-                color: Kirigami.Theme.textColor
-                opacity: 0.65
-                font: Kirigami.Theme.smallFont
-            }
-            PlasmaComponents.ComboBox {
-                id: sampleState
-                model: ["Printing", "Paused", "Idle", "Offline"]
-                Accessible.name: qsTr("Sample printer state")
-            }
+            visible: text.length > 0
+            text: client.error || (client.ready ? (client.status.print_stats || {}).message || ""
+                : client.connected ? qsTr("Waiting for Klipper (%1)…").arg(client.klippyState)
+                : qsTr("Connecting to Moonraker…"))
+            wrapMode: Text.Wrap
+            color: Kirigami.Theme.disabledTextColor
+            font: Kirigami.Theme.smallFont
         }
     }
 }
