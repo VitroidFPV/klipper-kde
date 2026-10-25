@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check release version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+
+          with open('package/metadata.json', encoding='utf-8') as metadata_file:
+              version = json.load(metadata_file)['KPlugin']['Version']
+          expected_tag = f'v{version}'
+          if os.environ['RELEASE_TAG'] != expected_tag:
+              raise SystemExit(f'Expected tag {expected_tag}, got {os.environ["RELEASE_TAG"]}')
+          PY
+      - name: Package widget
+        run: |
+          cd package
+          zip -r ../Klipper-Printers.plasmoid metadata.json contents
+          cd ..
+          unzip -t Klipper-Printers.plasmoid
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" Klipper-Printers.plasmoid --draft --generate-notes --verify-tag

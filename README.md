@@ -13,7 +13,15 @@ but are not stored or configured by the widget.
 
 ## Installation
 
-KDE Plasma 6 and QtWebSockets are required. From the repository directory, run:
+KDE Plasma 6 and QtWebSockets are required. Download `Klipper-Printers.plasmoid`
+from the [latest release](https://github.com/VitroidFPV/klipper-kde/releases/latest),
+then run:
+
+```sh
+kpackagetool6 --type Plasma/Applet --install ./Klipper-Printers.plasmoid
+```
+
+To install from the repository instead, run:
 
 ```sh
 kpackagetool6 --type Plasma/Applet --install ./package
@@ -30,6 +38,8 @@ After changing the code, update the installed copy:
 kpackagetool6 --type Plasma/Applet --upgrade ./package
 ```
 
+To upgrade from a downloaded release, use `--upgrade ./Klipper-Printers.plasmoid`.
+
 Remove and re-add the widget to reload it. If Plasma retains old QML components,
 log out and back in.
 
@@ -38,6 +48,22 @@ To uninstall:
 ```sh
 kpackagetool6 --type Plasma/Applet --remove com.github.vitroidfpv.klipper-kde
 ```
+
+## Releases
+
+Releases use version tags. For example, set `KPlugin.Version` in
+`package/metadata.json` to `0.2.0`, then run:
+
+```sh
+git add package/metadata.json
+git commit -m "Release: 0.2.0"
+git tag v0.2.0
+git push origin main v0.2.0
+```
+
+Use the same version in the metadata, commit message, and tag. The tag builds
+`Klipper-Printers.plasmoid` and creates a draft GitHub Release with generated
+notes. Review and publish the draft to make the download available.
 
 ## Widget preview
 
@@ -111,6 +137,13 @@ It uses a local test server.
 python3 tests/test_connection.py
 python3 tests/test_preview_reload.py
 QT_QPA_PLATFORM=offscreen /usr/lib64/qt6/bin/qmltestrunner -input tests/tst_printerdata.qml
+```
+
+The image tint pixel test also requires a working OpenGL context:
+
+```sh
+QT_QPA_PLATFORM=offscreen QSG_RHI_BACKEND=opengl LIBGL_ALWAYS_SOFTWARE=1 \
+    /usr/lib64/qt6/bin/qmltestrunner -input tests/tst_printercard.qml
 ```
 
 See the [Moonraker API documentation](https://moonraker.readthedocs.io/en/latest/external_api/introduction/).
